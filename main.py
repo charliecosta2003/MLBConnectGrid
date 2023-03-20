@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter import ttk
 from PIL import Image, ImageTk
 import random
 
@@ -20,43 +19,53 @@ class MLBConnect:
 
         # Title the window
         root.title("MLB Connect Grid")
+        root.configure(background='#394461')
+        root.minsize(700, 700)
 
         # Set up the main frame
-        self.mainframe = ttk.Frame(root,  width=400, height=400)
-        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-
-        # image = Image.open("res\\diamondbacks.png")
-        # image.thumbnail((200, 200))
-        # bg = ImageTk.PhotoImage(image)
-        #
-        # # Add a label widget to display the image
-        # label=Label(self.mainframe, image=bg)
-        # label.image = bg
-        # label.grid(row=1, column=1)
+        self.mainframe = Frame(root, padx=20, pady=20, background='#394461')
+        self.mainframe.pack(expand=True)
 
         # Set up the board display
-        self.board = ttk.Frame(self.mainframe)
-        self.board.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.board = Frame(self.mainframe, highlightbackground='white', highlightthickness=2, highlightcolor='white')
+        self.board.grid(column=0, row=0, sticky='NWES')
+
+        self.squares = [[] for _ in range(BOARD_SIZE + 1)]
+        for i in range(BOARD_SIZE + 1):
+            for j in range(BOARD_SIZE + 1):
+                frame = Frame(self.board, width=150, height=150, background='#394461', highlightbackground='white',
+                              highlightthickness=2, highlightcolor='white')
+                frame.grid(row=i, column=j, sticky='NWES')
+                self.squares[i].append(frame)
 
         # Set up column teams
         for i in range(BOARD_SIZE):
             team = self.model.column_teams[i]
             image = Image.open(f'res\\{team}.png')
-            image.thumbnail((200, 200))
+            image.thumbnail((140, 140))
             image = ImageTk.PhotoImage(image)
-            label = ttk.Label(self.board, image=image)
+            label = Label(self.squares[0][i+1], width=150, height=150, image=image, background='#394461')
             label.image = image
-            label.grid(row=0, column=i + 1)
+            label.grid(sticky='NWES')
 
         # Set up row teams
         for i in range(BOARD_SIZE):
             team = self.model.row_teams[i]
             image = Image.open(f'res\\{team}.png')
-            image.thumbnail((200, 200))
+            image.thumbnail((140, 140))
             image = ImageTk.PhotoImage(image)
-            label = ttk.Label(self.board, image=image)
+            label = Label(self.squares[i+1][0], width=150, height=150, image=image, background='#394461')
             label.image = image
-            label.grid(row=i+1, column=0)
+            label.grid(sticky='NWES')
+
+        # Set up the player input boxes
+        for i in range(1, BOARD_SIZE + 1):
+            for j in range(1, BOARD_SIZE + 1):
+                player = StringVar()
+                player_entry = Entry(self.squares[i][j], textvariable=player, bg='#394461', highlightthickness='2',
+                                     highlightcolor='white', foreground='white', insertbackground='white',
+                                     justify=CENTER, font=('calibri', 10))
+                player_entry.pack(expand=True)
 
 
 class ConnectBoardModel:

@@ -1,0 +1,13 @@
+Problems to fix urgently:
+Come up with a solution for constants shared across files
+
+Features to add:
+Style the check button
+Allow users to create custom games on a separate screen
+Give some sort of you win! Message when the game is won
+Add a welcome screen that lets you choose between a custom game and a random game
+Add a new game button that brings you back to the welcome screen
+Add an optional timer
+Add support for resizing the screen
+Add a solve button, potentially with features for which players to solve with (sort by games played, highest OPS/ERA+, average, era, etc.)
+Multithreading for looking up answers?

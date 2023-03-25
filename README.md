@@ -21,11 +21,6 @@ he won't count.
 1. To get a player to be accurately checked, you have to write out their full first and last
 name without any spelling errors. Do not use a nickname either (i.e., write "Francisco Lindor,
 not Frankie Lindor)
-2. Currently, the checking system works by finding the most recent player to play for one of the teams, and then sees
-if that player played for the other team. This works great for efficiency, but has one potential flaw. If two players
-of the same name ever played for the same organization, and you were trying to enter the older one, the system would
-identify the wrong player. Technically, there are a very small number of instances when this would be an issue, but I 
-think that the time saved by ignoring them outweighs this flaw. If you notice any blatant ones, please let me know 
-though. It is very easy to update the code to do an exhaustive search (the game will just be slower).
+2. Currently, you cannot use the same NAME twice in the grid, even if they refer to different players.
 
 Again, credit to Jomboy Media and Jolly Olive for this idea. I only made this because I enjoyed their videos so much.

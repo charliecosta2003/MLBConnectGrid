@@ -21,15 +21,15 @@ class GameScreen(Frame):
 
     def __init__(self, root):
 
-        # TODO: FIX THIS AND COMBINE WITH THE MAINFRAME. MAKE THE MAINFRAME THIS INIT
-        Frame.__init__(self, root, padx=20, pady=20, background=NEUTRAL_COLOR)
+        Frame.__init__(self, root, background=NEUTRAL_COLOR, padx=15)
+
         # Initialize the internal model of the board
         self.model = ConnectBoardModel()
 
         # Set up the board display
         self.boardframe = Frame(self, highlightbackground='white', highlightthickness=2,
                                 highlightcolor='white')
-        self.boardframe.grid(column=0, row=0, sticky='NWES')
+        self.boardframe.grid(column=0, row=0, sticky='NWES', padx=20, pady=20)
 
         self.squares = [[] for _ in range(BOARD_SIZE + 1)]
         for i in range(BOARD_SIZE + 1):
@@ -38,6 +38,12 @@ class GameScreen(Frame):
                               highlightthickness=2, highlightcolor='white')
                 frame.grid(row=i, column=j, sticky='NWES')
                 self.squares[i].append(frame)
+
+        # Set up title square
+        self.title_top = Label(self.squares[0][0], text="MLB", font=('Calibri', 30, 'bold'), background=NEUTRAL_COLOR, foreground='white')
+        self.title_top.pack(anchor='w')
+        self.title_bottom = Label(self.squares[0][0], text="Connect", font=('Calibri', 30, 'bold'), background=NEUTRAL_COLOR, foreground='white')
+        self.title_bottom.pack(anchor='w')
 
         # Set up column teams
         for i in range(BOARD_SIZE):
@@ -72,9 +78,12 @@ class GameScreen(Frame):
                                      justify=CENTER, font=('calibri', 10))
                 player_entry.pack(expand=True)
 
-        # Set up check button
-        self.check = Button(self, text="Check", command=self.check_and_update)
-        self.check.grid(row=0, column=1)
+        # Set up check button and frame
+        self.check_frame = LabelFrame(self, highlightthickness=2, highlightcolor='white', relief='ridge')
+        self.check_frame.grid(row=0, column=1, padx=20)
+        self.check = Button(self.check_frame, text="Check", command=self.check_and_update, padx=15, bg=NEUTRAL_COLOR,
+                            foreground='white', highlightcolor='white', relief='flat')
+        self.check.pack()
 
     # Check if the grid is filled out correctly, and update the board accordingly
     def check_and_update(self):

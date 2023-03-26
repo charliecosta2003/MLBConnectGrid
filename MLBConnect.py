@@ -1,7 +1,6 @@
 from tkinter import *
 
 from screens.WelcomeScreen import WelcomeScreen
-from screens.GameScreen import GameScreen
 
 NEUTRAL_COLOR = '#394461'
 WRONG_COLOR = 'red'
@@ -12,13 +11,12 @@ class MLBConnect(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.title("MLB Connect Grid")
-        #self.configure(background=NEUTRAL_COLOR)
+        self.configure(background=NEUTRAL_COLOR)
 
         self._screen = None
         self.switch_screen(WelcomeScreen)
 
     def switch_screen(self, screen):
-        """Destroys current frame and replaces it with a new one."""
         new_screen = screen(self)
         if self._screen is not None:
             self._screen.destroy()

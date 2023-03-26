@@ -1,17 +1,15 @@
 from tkinter import *
 
 from screens.WelcomeScreen import WelcomeScreen
-
-NEUTRAL_COLOR = '#394461'
-WRONG_COLOR = 'red'
-RIGHT_COLOR = 'green'
+from screens.GameScreen import GameScreen
+import globals
 
 
 class MLBConnect(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.title("MLB Connect Grid")
-        self.configure(background=NEUTRAL_COLOR)
+        self.configure(background=globals.NEUTRAL_COLOR)
 
         self._screen = None
         self.switch_screen(WelcomeScreen)
@@ -22,6 +20,14 @@ class MLBConnect(Tk):
             self._screen.destroy()
         self._screen = new_screen
         self._screen.pack(expand=True)
+
+    def switch_game_screen(self, teams=None):
+        new_screen = GameScreen(self, teams=teams)
+        if self._screen is not None:
+            self._screen.destroy()
+        self._screen = new_screen
+        self._screen.pack(expand=True)
+
 
 
 if __name__ == "__main__":

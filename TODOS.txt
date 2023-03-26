@@ -1,9 +1,8 @@
 Problems to fix urgently:
-Come up with a solution for constants shared across files
+Make the design better. Make the fields more private in the model and screens
 
 Features to add:
 Make sure there are no duplicate players allowed
-Allow users to create custom games on a separate screen
 Give some sort of you win! Message when the game is won
 Add a new game button that brings you back to the welcome screen
 Add an optional timer

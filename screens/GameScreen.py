@@ -4,93 +4,86 @@ import requests
 from PIL import Image, ImageTk
 import random
 
-NEUTRAL_COLOR = '#394461'
-WRONG_COLOR = 'red'
-RIGHT_COLOR = 'green'
-
-BOARD_SIZE = 3
-TEAMS = {"yankees": 147, "redsox": 111, "rays": 139, "bluejays": 141, "orioles": 110,
-         "twins": 142, "whitesox": 145, "guardians": 114, "tigers": 116, "royals": 118,
-         "astros": 117, "angels": 108, "athletics": 133, "rangers": 140, "mariners": 136,
-         "mets": 121, "braves": 144, "phillies": 143, "nationals": 120, "marlins": 146,
-         "cubs": 112, "brewers": 158, "pirates": 134, "reds": 113, "cardinals": 138,
-         "dodgers": 119, "padres": 135, "giants": 137, "diamondbacks": 109, "rockies": 115}
+import globals
 
 
 class GameScreen(Frame):
 
-    def __init__(self, root):
+    def __init__(self, root, teams=None):
 
-        Frame.__init__(self, root, background=NEUTRAL_COLOR, padx=15)
+        Frame.__init__(self, root, background=globals.NEUTRAL_COLOR, padx=15)
 
         # Initialize the internal model of the board
-        self.model = ConnectBoardModel()
+        self.model = ConnectBoardModel(teams=teams)
 
         # Set up the board display
         self.boardframe = Frame(self, highlightbackground='white', highlightthickness=2,
                                 highlightcolor='white')
         self.boardframe.grid(column=0, row=0, sticky='NWES', padx=20, pady=20)
 
-        self.squares = [[] for _ in range(BOARD_SIZE + 1)]
-        for i in range(BOARD_SIZE + 1):
-            for j in range(BOARD_SIZE + 1):
-                frame = Frame(self.boardframe, width=150, height=150, background=NEUTRAL_COLOR, highlightbackground='white',
-                              highlightthickness=2, highlightcolor='white')
+        self.squares = [[] for _ in range(globals.BOARD_SIZE + 1)]
+        for i in range(globals.BOARD_SIZE + 1):
+            for j in range(globals.BOARD_SIZE + 1):
+                frame = Frame(self.boardframe, width=150, height=150, background=globals.NEUTRAL_COLOR,
+                              highlightbackground='white', highlightthickness=2, highlightcolor='white')
                 frame.grid(row=i, column=j, sticky='NWES')
                 self.squares[i].append(frame)
 
         # Set up title square
-        self.title_top = Label(self.squares[0][0], text="MLB", font=('Calibri', 30, 'bold'), background=NEUTRAL_COLOR, foreground='white')
+        self.title_top = Label(self.squares[0][0], text="MLB", font=('Calibri', 30, 'bold'),
+                               background=globals.NEUTRAL_COLOR, foreground='white')
         self.title_top.pack(anchor='w')
-        self.title_bottom = Label(self.squares[0][0], text="Connect", font=('Calibri', 30, 'bold'), background=NEUTRAL_COLOR, foreground='white')
+        self.title_bottom = Label(self.squares[0][0], text="Connect", font=('Calibri', 30, 'bold'),
+                                  background=globals.NEUTRAL_COLOR, foreground='white')
         self.title_bottom.pack(anchor='w')
 
         # Set up column teams
-        for i in range(BOARD_SIZE):
+        for i in range(globals.BOARD_SIZE):
             team = self.model.column_teams[i]
             image = Image.open(f'res\\{team}.png')
             image.thumbnail((140, 140))
             image = ImageTk.PhotoImage(image)
-            label = Label(self.squares[0][i + 1], width=150, height=150, image=image, background=NEUTRAL_COLOR)
+            label = Label(self.squares[0][i + 1], width=150, height=150, image=image, background=globals.NEUTRAL_COLOR)
             label.image = image
             label.grid(sticky='NWES')
 
         # Set up row teams
-        for i in range(BOARD_SIZE):
+        for i in range(globals.BOARD_SIZE):
             team = self.model.row_teams[i]
             image = Image.open(f'res\\{team}.png')
             image.thumbnail((140, 140))
             image = ImageTk.PhotoImage(image)
-            label = Label(self.squares[i + 1][0], width=150, height=150, image=image, background=NEUTRAL_COLOR)
+            label = Label(self.squares[i + 1][0], width=150, height=150, image=image, background=globals.NEUTRAL_COLOR)
             label.image = image
             label.grid(sticky='NWES')
 
         # Set up a grid of the StringVars for each Entry widget
-        self.board = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.board = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
 
         # Set up the player input boxes
-        for i in range(1, BOARD_SIZE + 1):
-            for j in range(1, BOARD_SIZE + 1):
+        for i in range(1, globals.BOARD_SIZE + 1):
+            for j in range(1, globals.BOARD_SIZE + 1):
                 player = StringVar()
                 self.board[i-1][j-1] = player
-                player_entry = Entry(self.squares[i][j], textvariable=player, bg=NEUTRAL_COLOR, highlightthickness='2',
-                                     highlightcolor='white', foreground='white', insertbackground='white',
-                                     justify=CENTER, font=('calibri', 10))
+                player_entry = Entry(self.squares[i][j], textvariable=player, bg=globals.NEUTRAL_COLOR,
+                                     highlightthickness='2', highlightcolor='white', foreground='white',
+                                     insertbackground='white', justify=CENTER, font=('calibri', 10))
                 player_entry.pack(expand=True)
 
         # Set up check button and frame
         self.check_frame = LabelFrame(self, highlightthickness=2, highlightcolor='white', relief='ridge')
         self.check_frame.grid(row=0, column=1, padx=20)
-        self.check = Button(self.check_frame, text="Check", command=self.check_and_update, padx=15, bg=NEUTRAL_COLOR,
-                            foreground='white', highlightcolor='white', relief='flat')
+        self.check = Button(self.check_frame, text="Check", command=self.check_and_update, padx=15,
+                            bg=globals.NEUTRAL_COLOR, foreground='white', highlightcolor='white', relief='flat',
+                            font=('calibri', 12, 'bold'))
         self.check.pack()
 
     # Check if the grid is filled out correctly, and update the board accordingly
     def check_and_update(self):
         # Create a grid of the current text in each text box, and send that to be checked by the model
-        guesses = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
+        guesses = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
                 guesses[i][j] = self.board[i][j].get()
 
         self.model.update(guesses)
@@ -98,35 +91,31 @@ class GameScreen(Frame):
         self.update_colors(correctness_board)
 
     def update_colors(self, correctness_board):
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
                 if correctness_board[i][j] is None:
-                    self.squares[i+1][j+1].config(background=NEUTRAL_COLOR)
+                    self.squares[i+1][j+1].config(background=globals.NEUTRAL_COLOR)
                 elif correctness_board[i][j]:
-                    self.squares[i+1][j+1].config(background=RIGHT_COLOR)
+                    self.squares[i+1][j+1].config(background=globals.RIGHT_COLOR)
                 else:
-                    self.squares[i+1][j+1].config(background=WRONG_COLOR)
+                    self.squares[i+1][j+1].config(background=globals.WRONG_COLOR)
 
 
 class ConnectBoardModel:
 
-    def __init__(self):
-        self.column_teams = [None] * BOARD_SIZE
-        self.row_teams = [None] * BOARD_SIZE
+    def __init__(self, teams=None):
 
-        self.board = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
-        self.correctness_board = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.board = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
+        self.correctness_board = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
 
-        self.generate_teams()
-
-    def generate_teams(self):
-        teams = random.sample(list(TEAMS.keys()), BOARD_SIZE * 2)
-        self.column_teams = teams[:BOARD_SIZE]
-        self.row_teams = teams[BOARD_SIZE:]
+        if teams is None:
+            teams = random.sample(list(globals.TEAMS.values()), globals.BOARD_SIZE * 2)
+        self.row_teams = teams[:globals.BOARD_SIZE]
+        self.column_teams = teams[globals.BOARD_SIZE:]
 
     def update(self, updated_board):
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
                 if self.board[i][j] is None:
                     self.board[i][j] = updated_board[i][j]
                 elif updated_board is not None and self.board[i][j] != updated_board[i][j]:
@@ -135,13 +124,13 @@ class ConnectBoardModel:
 
     def check(self):
 
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
                 if self.correctness_board[i][j] is not None:
                     continue
                 self.correctness_board[i][j] = played_for_both(self.board[i][j],
-                                                               TEAMS[self.row_teams[i]],
-                                                               TEAMS[self.column_teams[j]])
+                                                               self.row_teams[i],
+                                                               self.column_teams[j])
         return self.correctness_board
 
 

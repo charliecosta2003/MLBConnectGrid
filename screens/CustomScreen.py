@@ -1,12 +1,13 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 
-from screens.GameScreen import GameScreen
 import globals
 
 
 class CustomScreen(Frame):
+
     def __init__(self, root):
         Frame.__init__(self, root)
         self.configure(background=globals.NEUTRAL_COLOR, pady=200)
@@ -34,6 +35,7 @@ class CustomScreen(Frame):
                                    font=('calibri', 12, 'bold'), command=self.start_game)
         self.start_button.pack()
 
+    # Set up combo boxes and corresponding image frames
     def init_selections(self, root):
         for i in range(globals.BOARD_SIZE):
             label_frame = Frame(root, width=150, height=150, background=globals.NEUTRAL_COLOR, highlightcolor='white',
@@ -43,7 +45,8 @@ class CustomScreen(Frame):
             label = Label(label_frame, background=globals.NEUTRAL_COLOR, width=140, height=140)
             self.image_labels.append(label)
 
-            team_list = ttk.Combobox(root, state='readonly', width=len("Arizona Diamondbacks") + 1, background=globals.NEUTRAL_COLOR)
+            team_list = ttk.Combobox(root, state='readonly', width=len("Arizona Diamondbacks") + 1,
+                                     background=globals.NEUTRAL_COLOR)
             self.team_lists.append(team_list)
             team_list.bind('<<ComboboxSelected>>', lambda event: update_image(
                 self.image_labels[self.team_lists.index(event.widget)],
@@ -51,20 +54,22 @@ class CustomScreen(Frame):
             team_list['values'] = tuple(globals.TEAMS.keys())
             team_list.grid(row=2, column=i)
 
+    # Do error checking to make sure the chosen teams are valid, and then switch to a game screen
     def start_game(self):
         teams = []
         for team_list in self.team_lists:
-            team = globals.TEAMS[team_list.get()]
-            if team == "":
-                print("Gotta add more teams my guy")
+            if team_list.get() == '':
+                messagebox.showinfo(title='Alert', message='Please finish selecting teams.')
                 return
+            team = globals.TEAMS[team_list.get()]
             if team in teams:
-                print("No duplicates")
+                messagebox.showinfo(title='Alert', message='Please remove the duplicate teams.')
                 return
             teams.append(team)
         self.master.switch_game_screen(teams)
 
 
+# Update the given label with the image of the given team
 def update_image(label, team):
     image = Image.open(f'res\\{team}.png')
     image.thumbnail((140, 140))

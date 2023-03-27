@@ -1,3 +1,5 @@
+# Global variables shared across all files
+
 NEUTRAL_COLOR = '#394461'
 WRONG_COLOR = 'red'
 RIGHT_COLOR = 'green'

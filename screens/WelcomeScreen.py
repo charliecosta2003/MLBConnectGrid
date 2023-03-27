@@ -1,11 +1,12 @@
 from tkinter import *
 
 from screens.CustomScreen import CustomScreen
-from screens.GameScreen import GameScreen
 
 import globals
 
+
 class WelcomeScreen(Frame):
+
     def __init__(self, root):
         Frame.__init__(self, root, width=700, height=700)
         self.configure(background=globals.NEUTRAL_COLOR, pady=100)

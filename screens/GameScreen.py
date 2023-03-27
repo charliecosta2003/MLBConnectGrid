@@ -1,10 +1,12 @@
 from tkinter import *
+from tkinter import messagebox
 
 import requests
 from PIL import Image, ImageTk
 import random
 
 import globals
+from screens.WelcomeScreen import WelcomeScreen
 
 
 class GameScreen(Frame):
@@ -59,26 +61,44 @@ class GameScreen(Frame):
 
         # Set up a grid of the StringVars for each Entry widget
         self.board = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
+        self.player_entries = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
 
         # Set up the player input boxes
         for i in range(1, globals.BOARD_SIZE + 1):
             for j in range(1, globals.BOARD_SIZE + 1):
                 player = StringVar()
-                self.board[i-1][j-1] = player
+                self.board[i - 1][j - 1] = player
                 player_entry = Entry(self.squares[i][j], textvariable=player, bg=globals.NEUTRAL_COLOR,
                                      highlightthickness='2', highlightcolor='white', foreground='white',
                                      insertbackground='white', justify=CENTER, font=('calibri', 10))
+                self.player_entries[i-1][j-1] = player_entry
                 player_entry.pack(expand=True)
 
-        # Set up check button and frame
-        self.check_frame = LabelFrame(self, highlightthickness=2, highlightcolor='white', relief='ridge')
-        self.check_frame.grid(row=0, column=1, padx=20)
-        self.check = Button(self.check_frame, text="Check", command=self.check_and_update, padx=15,
-                            bg=globals.NEUTRAL_COLOR, foreground='white', highlightcolor='white', relief='flat',
-                            font=('calibri', 12, 'bold'))
-        self.check.pack()
+        self.side_frame = Frame(self, background=globals.NEUTRAL_COLOR)
+        self.side_frame.grid(row=0, column=1, sticky='n', pady=(root.winfo_height() // 3 + 50, 0))
 
-    # Check if the grid is filled out correctly, and update the board accordingly
+        # Set up check button and frame
+        self.check_button_frame = LabelFrame(self.side_frame, highlightthickness=2, highlightcolor='white',
+                                             relief='ridge')
+        self.check_button_frame.grid(row=0, column=0, padx=10)
+        self.check_button = Button(self.check_button_frame, text="Check", command=self.check_and_update, padx=18,
+                                   bg=globals.NEUTRAL_COLOR, foreground='white', highlightcolor='white', relief='flat',
+                                   font=('calibri', 12, 'bold'))
+        self.check_button.pack()
+
+        # Set up win message and new game button, but do not add to the frame yet
+        self.win_message = Label(self.side_frame, text="You Win!", font=('Calibri', 20, 'bold'),
+                                 background=globals.NEUTRAL_COLOR, foreground='white')
+
+        self.new_game_button_frame = LabelFrame(self.side_frame, highlightthickness=2, highlightcolor='white',
+                                                relief='ridge')
+        self.new_game_button = Button(self.new_game_button_frame, text="New Game", bg=globals.NEUTRAL_COLOR,
+                                      foreground='white', highlightcolor='white', relief='flat',
+                                      font=('calibri', 12, 'bold'), command=lambda: root.switch_screen(WelcomeScreen))
+        self.new_game_button.grid()
+
+    # Check if the grid is filled out correctly, and update the board accordingly. If the board is filled out
+    # correctly, launch the game over sequence
     def check_and_update(self):
         # Create a grid of the current text in each text box, and send that to be checked by the model
         guesses = [[None] * globals.BOARD_SIZE for _ in range(globals.BOARD_SIZE)]
@@ -88,17 +108,31 @@ class GameScreen(Frame):
 
         self.model.update(guesses)
         correctness_board = self.model.check()
+        if correctness_board is None:
+            messagebox.showinfo(title='Alert', message='Please remove duplicate players.')
+            return
         self.update_colors(correctness_board)
 
+        if self.model.is_complete():
+            # Disable all the entry boxes
+            for i in range(globals.BOARD_SIZE):
+                for j in range(globals.BOARD_SIZE):
+                    self.player_entries[i][j].config(state='disabled')
+
+            # Add the win message and the new game button to the frame
+            self.win_message.grid(row=1, column=0, pady=30)
+            self.new_game_button_frame.grid(row=2, column=0)
+
+    # Update the colors of the grid squares
     def update_colors(self, correctness_board):
         for i in range(globals.BOARD_SIZE):
             for j in range(globals.BOARD_SIZE):
                 if correctness_board[i][j] is None:
-                    self.squares[i+1][j+1].config(background=globals.NEUTRAL_COLOR)
+                    self.squares[i + 1][j + 1].config(background=globals.NEUTRAL_COLOR)
                 elif correctness_board[i][j]:
-                    self.squares[i+1][j+1].config(background=globals.RIGHT_COLOR)
+                    self.squares[i + 1][j + 1].config(background=globals.RIGHT_COLOR)
                 else:
-                    self.squares[i+1][j+1].config(background=globals.WRONG_COLOR)
+                    self.squares[i + 1][j + 1].config(background=globals.WRONG_COLOR)
 
 
 class ConnectBoardModel:
@@ -113,6 +147,7 @@ class ConnectBoardModel:
         self.row_teams = teams[:globals.BOARD_SIZE]
         self.column_teams = teams[globals.BOARD_SIZE:]
 
+    # Update the model's boards with the most recent player inputs
     def update(self, updated_board):
         for i in range(globals.BOARD_SIZE):
             for j in range(globals.BOARD_SIZE):
@@ -122,8 +157,21 @@ class ConnectBoardModel:
                     self.board[i][j] = updated_board[i][j]
                     self.correctness_board[i][j] = None
 
+    # Return a grid containing booleans (or None), corresponding to if the user guessed the players correctly
     def check(self):
+        # Ensure first that there are no duplicate players
+        players = set()
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
+                player = self.board[i][j]
+                if player == '':
+                    continue
+                if player in players:
+                    return None
+                else:
+                    players.add(player)
 
+        # Now, check if each player is right one by one
         for i in range(globals.BOARD_SIZE):
             for j in range(globals.BOARD_SIZE):
                 if self.correctness_board[i][j] is not None:
@@ -133,7 +181,15 @@ class ConnectBoardModel:
                                                                self.column_teams[j])
         return self.correctness_board
 
+    def is_complete(self):
+        for i in range(globals.BOARD_SIZE):
+            for j in range(globals.BOARD_SIZE):
+                if self.correctness_board[i][j] is None or not self.correctness_board[i][j]:
+                    return False
+        return True
 
+
+# Check if a given player played for both given teams
 def played_for_both(player_name, team1, team2):
     if len(player_name) == 0 or player_name.split(" ") == 1:
         return None
@@ -173,13 +229,3 @@ def played_for_both(player_name, team1, team2):
         if team_id == team2:
             return True
     return False
-
-
-def main():
-    root = Tk()
-    GameScreen(root)
-    root.mainloop()
-
-
-if __name__ == '__main__':
-    main()

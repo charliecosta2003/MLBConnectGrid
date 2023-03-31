@@ -19,8 +19,8 @@ he won't count.
 
 ## The Limitations:
 1. To get a player to be accurately checked, you have to write out their full first and last
-name without any spelling errors. Do not use a nickname either (i.e., write "Francisco Lindor,
-not Frankie Lindor)
+name without any spelling errors. Do not use a nickname either (i.e., write "Francisco Lindor",
+not "Frankie Lindor")
 2. Currently, you cannot use the same NAME twice in the grid, even if they refer to different players. Also, the
 checking algorithm currently uses the first player found with a given name, so there is a nonzero chance that the game
 could produce an incorrect result if it thought you were referring to a different player of the exact same name who also
@@ -35,5 +35,8 @@ am working on optimizing it.
 2. I am experimenting with an optional timer, and a built out pause menu.
 3. Currently, the game works by querying the MLB API. However, performance could probably be significantly improved if
 I just created a file/database of player-to-teams-played-for mappings. So, this may be done in the future.
+
+## Downloading and Playing the Game:
+Downloading should be as simple as cloning down the respository and running the main method from the MLBConnect.py file. If you do not already have them in your environment, you may need to download the requests package and the PIL/Pillow package.
 
 Again, credit to Jomboy Media and Jolly Olive for this idea. I only made this because I enjoyed their videos so much.

@@ -195,7 +195,7 @@ def played_for_both(player_name, team1, team2):
         return None
     id = None
     found = False
-    for i in range(2022, 1960, -1):
+    for i in range(2023, 1960, -1):
         response = requests.get(f"https://statsapi.mlb.com/api/v1/teams/{team1}/roster?season={i}")
         j = response.json()
 
